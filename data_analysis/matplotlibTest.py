@@ -103,6 +103,7 @@ def main():
     X,Y = np.meshgrid(x,y)
     plt.contourf(X,Y,f(X,Y),8,alpha = .75,cmap=plt.cm.hot)
 
+    plt.savefig("./data/fig.png")
     plt.show()
 
 if __name__ == '__main__':
