@@ -17,20 +17,50 @@ def sigmoid(inX):
 #Logistic回归梯度上升优化算法
 def gradAscent(dataMatIn,classLabels):
     dataMatrix = mat(dataMatIn)
+    print dataMatrix
     labelMat = mat(classLabels).transpose()
+    print labelMat
+    print dataMatrix.transpose()
     m,n = shape(dataMatrix)
     alpha = 0.001
     maxCycles = 500
     weights = ones((n,1))
+    print weights
     for k in range(maxCycles):
         h =sigmoid(dataMatrix*weights)
         error = labelMat-h
         weights = weights + alpha * dataMatrix.transpose() * error
     return weights
 
+# 随机  梯度上升算法
+def stockGradAscent0(dataMatrix,classLabels):
+    m,n = shape(dataMatrix)
+    alpha = 0.01
+    weights = ones(n)
+    for i in range(m):
+        h = sigmoid( sum( dataMatrix[i] * weights))
+        error = classLabels[i] - h
+        weights = weights + alpha * error * dataMatrix[i]
+    return weights
+
+#改进的随机梯度上升算法
+def stockGradAscent1(dataMatrix,classLabels,numIter=150):
+    m,n = shape(dataMatrix)
+    weights = ones(n)
+    for j in range(numIter):
+        dataIndex = range(m)
+        for i in range(m):
+            alpha = 4/(1.0 + j + i) + 0.01
+            randIndex = int(random.uniform(0,len(dataIndex)))
+            h = sigmoid(sum(dataMatrix[randIndex] * weights))
+            error = classLabels[randIndex] - h
+            weights = weights + alpha * error * dataMatrix[randIndex]
+            del(dataIndex[randIndex])
+    return weights
+
 def plotBestFit(wei):
     import matplotlib.pyplot as plt
-    weights = wei.getA()
+    weights = wei.getA() #矩阵转成数组
     dataMat,labelMat=loadDataSet()
     dataArr = array(dataMat)
     n = shape(dataArr)[0]
@@ -53,8 +83,7 @@ def plotBestFit(wei):
 
 if __name__ == '__main__':
     dataMat,labelMat = loadDataSet()
-    # print dataMat
-    # print labelMat
-    weights = gradAscent(dataMat,labelMat)
-    # print weights
+    # weights = gradAscent(dataMat,labelMat)
+    # weights = stockGradAscent0(dataMat,labelMat)
+    weights = stockGradAscent1(dataMat, labelMat)
     plotBestFit(weights)
