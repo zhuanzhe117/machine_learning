@@ -17,19 +17,16 @@ def sigmoid(inX):
 #Logistic回归梯度上升优化算法
 def gradAscent(dataMatIn,classLabels):
     dataMatrix = mat(dataMatIn)
-    print dataMatrix
     labelMat = mat(classLabels).transpose()
-    print labelMat
-    print dataMatrix.transpose()
     m,n = shape(dataMatrix)
     alpha = 0.001
     maxCycles = 500
     weights = ones((n,1))
-    print weights
     for k in range(maxCycles):
         h =sigmoid(dataMatrix*weights)
         error = labelMat-h
         weights = weights + alpha * dataMatrix.transpose() * error
+        print weights
     return weights
 
 # 随机  梯度上升算法
@@ -83,7 +80,7 @@ def plotBestFit(wei):
 
 if __name__ == '__main__':
     dataMat,labelMat = loadDataSet()
-    # weights = gradAscent(dataMat,labelMat)
+    weights = gradAscent(dataMat,labelMat)
     # weights = stockGradAscent0(dataMat,labelMat)
-    weights = stockGradAscent1(dataMat, labelMat)
+    # weights = stockGradAscent1(dataMat, labelMat)
     plotBestFit(weights)
