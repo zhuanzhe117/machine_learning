@@ -5,6 +5,7 @@ kaggle案例：泰坦尼克号之灾，预测谁能生还： 数据处理
 
 import pandas as pd #数据分析
 import numpy as np #科学计算
+from timeit import timeit
 
 data_train = pd.read_csv("data/Train.csv")
 #*************************************处理数据***************************
@@ -16,14 +17,20 @@ def set_missing_ages(df):
     # 乘客分成已知年龄和未知年龄两部分
     known_age = age_df[age_df.Age.notnull()].as_matrix()
     unknown_age = age_df[age_df.Age.isnull()].as_matrix()
-
+    print unknown_age.shape
+    print known_age.shape
     # y即目标年龄
     y = known_age[:, 0]
     # X即特征属性值
     X = known_age[:, 1:]
     # fit到RandomForestRegressor之中
+
     rfr = RandomForestRegressor(random_state=0, n_estimators=2000, n_jobs=-1)
     rfr.fit(X, y)
+#测试函数执行时间长短
+# t = timeit('set_missing_ages(data_train)', 'from __main__ import set_missing_ages', number=10)
+# print(t)
+
     # 用得到的模型进行未知年龄结果预测
     predictedAges = rfr.predict(unknown_age[:, 1::])
     # 用得到的预测结果填补原缺失数据
@@ -63,7 +70,7 @@ df['Age_scaled'] = scaler.fit_transform(df['Age'].values.reshape(-1,1))
 # fare_scale_param = scaler.fit(df['Fare'])
 # df['Fare_scaled'] = scaler.fit_transform(df['Fare'], fare_scale_param)
 df['Fare_scaled'] = scaler.fit_transform(df['Fare'].values.reshape(-1,1))
-# print df
+print df
 
 #***********************************训练算法*******************************
 # 我们把需要的feature字段取出来，转成numpy格式，使用scikit-learn中的LogisticRegression建模
@@ -78,44 +85,44 @@ X = train_np[:, 1:]
 # fit到RandomForestRegressor之中
 clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
 clf.fit(X, y)
-clf
 
 #***********************************测试算法******************************
-# data_test = pd.read_csv("data/test.csv")
-# data_test.loc[ (data_test.Fare.isnull()), 'Fare' ] = 0
-# # 接着我们对test_data做和train_data中一致的特征变换
-# # 首先用同样的RandomForestRegressor模型填上丢失的年龄
-# tmp_df = data_test[['Age','Fare', 'Parch', 'SibSp', 'Pclass']]
-# null_age = tmp_df[data_test.Age.isnull()].as_matrix()
-# # 根据特征属性X预测年龄并补上
-# X = null_age[:, 1:]
-# predictedAges = rfr.predict(X)
-# data_test.loc[ (data_test.Age.isnull()), 'Age' ] = predictedAges
-#
-# data_test = set_Cabin_type(data_test)
-# dummies_Cabin = pd.get_dummies(data_test['Cabin'], prefix= 'Cabin')
-# dummies_Embarked = pd.get_dummies(data_test['Embarked'], prefix= 'Embarked')
-# dummies_Sex = pd.get_dummies(data_test['Sex'], prefix= 'Sex')
-# dummies_Pclass = pd.get_dummies(data_test['Pclass'], prefix= 'Pclass')
-#
-# df_test = pd.concat([data_test, dummies_Cabin, dummies_Embarked, dummies_Sex, dummies_Pclass], axis=1)
-# df_test.drop(['Pclass', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis=1, inplace=True)
-# df_test['Age_scaled'] = scaler.fit_transform(df_test['Age'].values.reshape(-1,1))
-# df_test['Fare_scaled'] = scaler.fit_transform(df_test['Fare'].values.reshape(-1,1))
-# df_test
-#
-# test = df_test.filter(regex='Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
-# predictions = clf.predict(test)
-# result = pd.DataFrame({'PassengerId':data_test['PassengerId'].as_matrix(), 'Survived':predictions.astype(np.int32)})
-# result.to_csv("data/logistic_regression_predictions.csv", index=False)
-# pd.read_csv("data/logistic_regression_predictions.csv")
+data_test = pd.read_csv("data/test.csv")
+data_test.loc[ (data_test.Fare.isnull()), 'Fare' ] = 0
+# 接着我们对test_data做和train_data中一致的特征变换
+# 首先用同样的RandomForestRegressor模型填上丢失的年龄
+tmp_df = data_test[['Age','Fare', 'Parch', 'SibSp', 'Pclass']]
+null_age = tmp_df[data_test.Age.isnull()].as_matrix()
+# 根据特征属性X预测年龄并补上
+X = null_age[:, 1:]
+predictedAges = rfr.predict(X)
+data_test.loc[ (data_test.Age.isnull()), 'Age' ] = predictedAges
+
+data_test = set_Cabin_type(data_test)
+dummies_Cabin = pd.get_dummies(data_test['Cabin'], prefix= 'Cabin')
+dummies_Embarked = pd.get_dummies(data_test['Embarked'], prefix= 'Embarked')
+dummies_Sex = pd.get_dummies(data_test['Sex'], prefix= 'Sex')
+dummies_Pclass = pd.get_dummies(data_test['Pclass'], prefix= 'Pclass')
+
+df_test = pd.concat([data_test, dummies_Cabin, dummies_Embarked, dummies_Sex, dummies_Pclass], axis=1)
+df_test.drop(['Pclass', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked'], axis=1, inplace=True)
+df_test['Age_scaled'] = scaler.fit_transform(df_test['Age'].values.reshape(-1,1))
+df_test['Fare_scaled'] = scaler.fit_transform(df_test['Fare'].values.reshape(-1,1))
+df_test
+
+test = df_test.filter(regex='Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
+predictions = clf.predict(test)
+result = pd.DataFrame({'PassengerId':data_test['PassengerId'].as_matrix(), 'Survived':predictions.astype(np.int32)})
+result.to_csv("data/logistic_regression_predictions.csv", index=False)
+pd.read_csv("data/logistic_regression_predictions.csv")
 
 #******************************画出模型的学习曲线*******************************
+
 from matplotlib.font_manager import FontProperties
 font = FontProperties(fname=r"c:\windows\fonts\simsun.ttc",size=8)#设置中文字体
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.learning_curve import learning_curve
+from sklearn import learning_curve
 
 # 用sklearn的learning_curve得到training_score和cv_score，使用matplotlib画出learning curve
 def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None, n_jobs=1,
@@ -168,34 +175,34 @@ plot_learning_curve(clf, u"学习曲线", X, y)
 
 #********************************交叉验证********************************
 
-from sklearn import cross_validation
-
-# 简单看看打分情况
-clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
-all_data = df.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
-X = all_data.as_matrix()[:,1:]
-y = all_data.as_matrix()[:,0]
-print cross_validation.cross_val_score(clf, X, y, cv=5)
-
-# 分割数据
-split_train, split_cv = cross_validation.train_test_split(df, test_size=0.3, random_state=0)
-train_df = split_train.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
-# 生成模型
-clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
-clf.fit(train_df.as_matrix()[:,1:], train_df.as_matrix()[:,0])
-
-# 对cross validation数据进行预测
-cv_df = split_cv.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
-predictions = clf.predict(cv_df.as_matrix()[:,1:])
-split_cv[ predictions != cv_df.as_matrix()[:,0] ].drop()
-
-
-
-# 去除预测错误的case看原始dataframe数据
-#split_cv['PredictResult'] = predictions
-origin_data_train = pd.read_csv("Train.csv")
-bad_cases = origin_data_train.loc[origin_data_train['PassengerId'].isin(split_cv[predictions != cv_df.as_matrix()[:,0]]['PassengerId'].values)]
-bad_cases
+# from sklearn import cross_validation
+#
+# # 简单看看打分情况
+# clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
+# all_data = df.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
+# X = all_data.as_matrix()[:,1:]
+# y = all_data.as_matrix()[:,0]
+# print cross_validation.cross_val_score(clf, X, y, cv=5)
+#
+# # 分割数据
+# split_train, split_cv = cross_validation.train_test_split(df, test_size=0.3, random_state=0)
+# train_df = split_train.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
+# # 生成模型
+# clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
+# clf.fit(train_df.as_matrix()[:,1:], train_df.as_matrix()[:,0])
+#
+# # 对cross validation数据进行预测
+# cv_df = split_cv.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass_.*')
+# predictions = clf.predict(cv_df.as_matrix()[:,1:])
+# split_cv[ predictions != cv_df.as_matrix()[:,0] ].drop()
+#
+#
+#
+# # 去除预测错误的case看原始dataframe数据
+# #split_cv['PredictResult'] = predictions
+# origin_data_train = pd.read_csv("Train.csv")
+# bad_cases = origin_data_train.loc[origin_data_train['PassengerId'].isin(split_cv[predictions != cv_df.as_matrix()[:,0]]['PassengerId'].values)]
+# bad_cases
 
 
 
