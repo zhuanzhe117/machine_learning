@@ -19,8 +19,8 @@ def readfile(path):
     return content
 #分词
 def participle():
-    corpus_path = "D:/materials/dataset/train_corpus_small/"
-    seg_path = "D:/materials/dataset/train_corpus_seg/"
+    corpus_path = "D:/materials/dataset/naivebayes_chinese_dataset/train_corpus_small/"
+    seg_path = "D:/materials/dataset/naivebayes_chinese_dataset/train_corpus_seg/"
     catelist = os.listdir(corpus_path)
     # 获取每个目录下的所有文件
     for mydir in catelist:
@@ -41,8 +41,8 @@ import pickle
 from sklearn.datasets.base import Bunch
 def persistence_to_Bunch():
     bunch = Bunch(target_name=[],label=[],filenames=[],contents=[])
-    wordbag_path = "D:/materials/dataset/train_word_bag/train_set.dat"
-    seg_path = "D:/materials/dataset/train_corpus_seg/"
+    wordbag_path = "D:/materials/dataset/naivebayes_chinese_dataset/train_word_bag/train_set.dat"
+    seg_path = "D:/materials/dataset/naivebayes_chinese_dataset/train_corpus_seg/"
 
     catelist = os.listdir(seg_path)
     bunch.target_name.extend(catelist)
@@ -61,7 +61,6 @@ def persistence_to_Bunch():
     file_obj.close()
     print "构建文本对象Bunch结束！！！"
 
-from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfTransformer  #TF-IDF向量转换类
 from sklearn.feature_extraction.text import TfidfVectorizer   #TF-IDF向量生成类
 #读取Bunch对象
@@ -77,12 +76,12 @@ def writebunchobj(path,bunchobj):
     file_obj.close()
 
 def get_tfidf():
-    path = "D:/materials/dataset/train_word_bag/train_set.dat"
+    path = "D:/materials/dataset/naivebayes_chinese_dataset/train_word_bag/train_set.dat"
     bunch = readbunchobj(path)
     #构建TF-IDF词向量空间对象
     tfidfspace = Bunch(target_name=bunch.target_name,label = bunch.label,filenames=bunch.filenames,tdm=[],vocabulary={})
     #读取停用词表
-    stopword_path = "D:/materials/dataset/ChineseStopWords.txt"
+    stopword_path = "D:/materials/dataset/naivebayes_chinese_dataset/ChineseStopWords.txt"
     stpwrdlst = readfile(stopword_path).splitlines()
     #使用TfidfVectorizer初始化向量空间模型
     vectorizer = TfidfVectorizer(stop_words=stpwrdlst,sublinear_tf=True,max_df=0.5)
@@ -91,14 +90,14 @@ def get_tfidf():
     tfidfspace.tdm = vectorizer.fit_transform(bunch.contents)
     tfidfspace.vocabulary = vectorizer.vocabulary_
     #持久化TF-IDF向量词袋
-    space_path = "D:/materials/dataset/train_word_bag/tfidfspace.dat"
+    space_path = "D:/materials/dataset/naivebayes_chinese_dataset/train_word_bag/tfidfspace.dat"
     writebunchobj(space_path,tfidfspace)
 
 ########################################测试集处理################################
 #分词
 def participle_test():
-    corpus_path = "D:/materials/dataset/test_corpus_small/"
-    seg_path = "D:/materials/dataset/test_corpus_seg/"
+    corpus_path = "D:/materials/dataset/naivebayes_chinese_dataset/test_corpus_small/"
+    seg_path = "D:/materials/dataset/naivebayes_chinese_dataset/test_corpus_seg/"
     catelist = os.listdir(corpus_path)
     # 获取每个目录下的所有文件
     for mydir in catelist:
@@ -117,8 +116,8 @@ def participle_test():
 #将分词结果保存到Bunch数据结构
 def persistence_to_Bunch_test():
     bunch = Bunch(target_name=[],label=[],filenames=[],contents=[])
-    wordbag_path = "D:/materials/dataset/test_word_bag/test_set.dat"
-    seg_path = "D:/materials/dataset/test_corpus_seg/"
+    wordbag_path = "D:/materials/dataset/naivebayes_chinese_dataset/test_word_bag/test_set.dat"
+    seg_path = "D:/materials/dataset/naivebayes_chinese_dataset/test_corpus_seg/"
     catelist = os.listdir(seg_path)
     bunch.target_name.extend(catelist)
     for mydir in catelist:
@@ -137,14 +136,14 @@ def persistence_to_Bunch_test():
     print "测试集构建文本对象Bunch结束！！！"
 
 def get_tfidf_test():
-    path = "D:/materials/dataset/test_word_bag/test_set.dat"
+    path = "D:/materials/dataset/naivebayes_chinese_dataset/test_word_bag/test_set.dat"
     bunch = readbunchobj(path)
     #构建TF-IDF词向量空间对象
     testspace = Bunch(target_name=bunch.target_name,label = bunch.label,filenames=bunch.filenames,tdm=[],vocabulary={})
     #导入训练集的词袋
-    trainbunch = readbunchobj("D:/materials/dataset/train_word_bag/tfidfspace.dat")
+    trainbunch = readbunchobj("D:/materials/dataset/naivebayes_chinese_dataset/train_word_bag/tfidfspace.dat")
     #读取停用词表
-    stopword_path = "D:/materials/dataset/ChineseStopWords.txt"
+    stopword_path = "D:/materials/dataset/naivebayes_chinese_dataset/ChineseStopWords.txt"
     stpwrdlst = readfile(stopword_path).splitlines()
     #使用TfidfVectorizer初始化向量空间模型
     vectorizer = TfidfVectorizer(stop_words=stpwrdlst,sublinear_tf=True,max_df=0.5,vocabulary = trainbunch.vocabulary)#使用训练集词袋向量
@@ -154,17 +153,17 @@ def get_tfidf_test():
     testspace.tdm = vectorizer.fit_transform(bunch.contents)
     testspace.vocabulary = vectorizer.vocabulary
     #持久化TF-IDF向量词袋
-    space_path = "D:/materials/dataset/test_word_bag/testspace.dat"
+    space_path = "D:/materials/dataset/naivebayes_chinese_dataset/test_word_bag/testspace.dat"
     writebunchobj(space_path,testspace)
 
 #######################################执行多项式贝叶斯算法进行测试文本分类，并返回分类精度#####################################
 from sklearn.naive_bayes import MultinomialNB #导入多项式贝叶斯算法包
 from sklearn import metrics
 def get_category():
-    trainpath = "D:/materials/dataset/train_word_bag/tfidfspace.dat" #导入训练集向量空间
+    trainpath = "D:/materials/dataset/naivebayes_chinese_dataset/train_word_bag/tfidfspace.dat" #导入训练集向量空间
     train_set = readbunchobj(trainpath)
 
-    testpath = "D:/materials/dataset/test_word_bag/testspace.dat" #导入测试集向量空间
+    testpath = "D:/materials/dataset/naivebayes_chinese_dataset/test_word_bag/testspace.dat" #导入测试集向量空间
     test_set = readbunchobj(testpath)
 
     clf = MultinomialNB(alpha=0.001).fit(train_set.tdm,train_set.label) #应用贝叶斯算法，slpha越小，迭代次数越高，精度越高
