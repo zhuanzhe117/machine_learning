@@ -43,4 +43,8 @@ def get_category():
     print "f1-score:{0:.3f}".format(metrics.f1_score(test_set.label, predicted))
 
 if __name__ == '__main__':
-    get_category()
+    # get_category()
+    # print reduce(lambda x,y:x+y,range(1,11))
+    list = [1,1,1,3,100]
+    print reduce(lambda x,y:x+y,list)
+    map()
