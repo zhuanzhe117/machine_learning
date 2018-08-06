@@ -51,18 +51,11 @@ def color_cluster(dataindx, dataSet, plt, k=4):
 def drawScatter(plt, mydata, size=20, color='blue', mrkr='o'):
     plt.scatter(mydata.T[0].tolist(), mydata.T[1].tolist(), s=size, c=color, marker=mrkr)
 
-
-if __name__=="__main__":
-    dataMat = file2matrix("data/4k2_far.txt", "\t")  # 构建数据集
-    dataSet = mat(dataMat[:, 1:])
-    k = 4
+def kMeans(dataSet, k, distMeas=disEclud, createCent=randCenters):
     m = shape(dataSet)[0]
     ClustDist = mat(zeros((m, 2)))
     clustercents = randCenters(dataSet, k)
-
     flag = True
-    # counter = [];
-
     while flag:
         flag = False
         for i in range(m):
@@ -72,14 +65,18 @@ if __name__=="__main__":
             minIndex = distlist.index(minDist)
             if ClustDist[i, 0] != minIndex:
                 flag = True
-            ClustDist[i, :] = minIndex, minDist
+            ClustDist[i, :] = minIndex, minDist**2
 
         for cent in range(k):
             ptsInClust = dataSet[nonzero(ClustDist[:, 0].A == cent)[0]]
             clustercents[cent, :] = mean(ptsInClust, axis=0)
+            print "clustercents:\n", clustercents
+    return clustercents,ClustDist
 
-        # 返回完成的聚类中心
-    print "clustercents:\n", clustercents
+if __name__=="__main__":
+    dataMat = file2matrix("data/4k2_far.txt", "\t")  # 构建数据集
+    dataSet = mat(dataMat[:, 1:])
+    clustercents,ClustDist = kMeans(dataSet,4)
     color_cluster(ClustDist[:, 0:1], dataSet, plt)
     drawScatter(plt, clustercents, size=60, color='red', mrkr='D')
     plt.show()
