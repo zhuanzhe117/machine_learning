@@ -10,14 +10,15 @@ def biKmeans(dataSet, k, distMeas=disEclud):
     centList =[centroid0]
     for j in range(m):
         clusterAssment[j,1] = distMeas(mat(centroid0), dataSet[j,:])**2
-    while (len(centList) < k):
+    while (len(centList) < k): #直到满足质心数为k，否则一直划分
         lowestSSE = inf
-        for i in range(len(centList)):
+        for i in range(len(centList)): #这个循环会得到最应该划分的簇，并把这个簇一分为二
             ptsInCurrCluster = dataSet[nonzero(clusterAssment[:,0].A==i)[0],:]#get the data points currently in cluster i
             centroidMat, splitClustAss = kMeans(ptsInCurrCluster, 2, distMeas)
             sseSplit = sum(splitClustAss[:,1])#compare the SSE to the currrent minimum
             sseNotSplit = sum(clusterAssment[nonzero(clusterAssment[:,0].A!=i)[0],1])
-            print "sseSplit, and notSplit: ",sseSplit,sseNotSplit
+            print "sseSplit +sseNnotSplit = ",sseSplit+sseNotSplit
+            print "lowestSSE: ",lowestSSE
             if (sseSplit + sseNotSplit) < lowestSSE:
                 bestCentToSplit = i
                 bestNewCents = centroidMat
@@ -31,10 +32,10 @@ def biKmeans(dataSet, k, distMeas=disEclud):
         centList.append(bestNewCents[1,:].tolist()[0])
         clusterAssment[nonzero(clusterAssment[:,0].A == bestCentToSplit)[0],:]= bestClustAss#reassign new clusters, and SSE
     return mat(centList), clusterAssment
-if __name__=="__main__":
-    dataMat = file2matrix("data/4k2_far.txt", "\t")  # 构建数据集
-    dataSet = mat(dataMat[:, 1:])
-    clustercents, ClustDist = biKmeans(dataSet,4)
-    color_cluster(ClustDist[:, 0:1], dataSet, plt)
-    drawScatter(plt, clustercents, size=60, color='red', mrkr='D')
-    plt.show()
+# if __name__=="__main__":
+#     dataMat = file2matrix("data/4k2_far.txt", "\t")  # 构建数据集
+#     dataSet = mat(dataMat[:, 1:])
+#     clustercents, ClustDist = biKmeans(dataSet,4)
+#     color_cluster(ClustDist[:, 0:1], dataSet, plt)
+#     drawScatter(plt, clustercents, size=60, color='red', mrkr='D')
+#     plt.show()

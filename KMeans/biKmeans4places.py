@@ -1,3 +1,5 @@
+# _*_ coding: utf-8 _*_
+
 from biKmeans import *
 import urllib
 import json
@@ -17,7 +19,7 @@ def geoGrab(stAddress, city):
 from time import sleep
 
 def massPlaceFind(fileName):
-    fw = open('places.txt', 'w')
+    fw = open('data/places.txt', 'w')
     for line in open(fileName).readlines():
         line = line.strip()
         lineArr = line.split('\t')
@@ -42,7 +44,7 @@ import matplotlib.pyplot as plt
 
 def clusterClubs(numClust=5):
     datList = []
-    for line in open('places.txt').readlines():
+    for line in open('data/places.txt').readlines():
         lineArr = line.split('\t')
         datList.append([float(lineArr[4]), float(lineArr[3])])
     datMat = mat(datList)
@@ -52,7 +54,7 @@ def clusterClubs(numClust=5):
     scatterMarkers = ['s', 'o', '^', '8', 'p', 'd', 'v', 'h', '>', '<']
     axprops = dict(xticks=[], yticks=[])
     ax0 = fig.add_axes(rect, label='ax0', **axprops)
-    imgP = plt.imread('Portland.png')
+    imgP = plt.imread('data/Portland.png')
     ax0.imshow(imgP)
     ax1 = fig.add_axes(rect, label='ax1', frameon=False)
     for i in range(numClust):
@@ -61,3 +63,7 @@ def clusterClubs(numClust=5):
         ax1.scatter(ptsInCurrCluster[:, 0].flatten().A[0], ptsInCurrCluster[:, 1].flatten().A[0], marker=markerStyle, s=90)
     ax1.scatter(myCentroids[:, 0].flatten().A[0], myCentroids[:, 1].flatten().A[0], marker='+', s=300)
     plt.show()
+
+if __name__=="__main__":
+    # massPlaceFind("data/portlandClubs.txt")
+    clusterClubs()
