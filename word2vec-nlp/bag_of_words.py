@@ -3,8 +3,31 @@
 import pandas as pd
 from bs4 import BeautifulSoup
 import re
-import nltk
 from nltk.corpus import stopwords
+
+def review_to_words( raw_review ):
+    # Function to convert a raw review to a string of words
+    # The input is a single string (a raw movie review), and
+    # the output is a single string (a preprocessed movie review)
+    # 1. Remove HTML
+    review_text = BeautifulSoup(raw_review,"html.parser").get_text()
+    #
+    # 2. Remove non-letters
+    letters_only = re.sub("[^a-zA-Z]", " ", review_text)
+    #
+    # 3. Convert to lower case, split into individual words
+    words = letters_only.lower().split()
+    #
+    # 4. In Python, searching a set is much faster than searching
+    #   a list, so convert the stop words to a set
+    stops = set(stopwords.words("english"))
+    #
+    # 5. Remove stop words
+    meaningful_words = [w for w in words if not w in stops]
+    #
+    # 6. Join the words back into one string separated by space,
+    # and return the result.
+    return( " ".join( meaningful_words ))
 
 def preprocess_data(train):
     num_reviews = train["review"].size
@@ -37,30 +60,6 @@ def preprocess_data(train):
     # Numpy arrays are easy to work with, so convert the result to an array
     train_data_features = train_data_features.toarray()
     return train_data_features,vectorizer
-
-def review_to_words( raw_review ):
-    # Function to convert a raw review to a string of words
-    # The input is a single string (a raw movie review), and
-    # the output is a single string (a preprocessed movie review)
-    # 1. Remove HTML
-    review_text = BeautifulSoup(raw_review,"html.parser").get_text()
-    #
-    # 2. Remove non-letters
-    letters_only = re.sub("[^a-zA-Z]", " ", review_text)
-    #
-    # 3. Convert to lower case, split into individual words
-    words = letters_only.lower().split()
-    #
-    # 4. In Python, searching a set is much faster than searching
-    #   a list, so convert the stop words to a set
-    stops = set(stopwords.words("english"))
-    #
-    # 5. Remove stop words
-    meaningful_words = [w for w in words if not w in stops]
-    #
-    # 6. Join the words back into one string separated by space,
-    # and return the result.
-    return( " ".join( meaningful_words ))
 
 def train_model_classify(train_data_features,vectorizer):
     print "Training the random forest..."
@@ -109,23 +108,4 @@ if __name__=="__main__":
     print train.columns.values
     train_data_features, vectorizer = preprocess_data(train)
     train_model_classify(train_data_features, vectorizer)
-    # from bs4 import BeautifulSoup
-    # example1 = BeautifulSoup(train["review"][0], "html.parser")
-    # print train["review"][0]
-    # print example1.get_text()
-    #
-    # import re
-    # letters_only = re.sub("[^a-zA-Z]",  # The pattern to search for
-    #                       " ",  # The pattern to replace it with
-    #                       example1.get_text())  # The text to search
-    # print letters_only
-    # lower_case = letters_only.lower()  # Convert to lower case
-    # words = lower_case.split()  # Split into words
-    #
-    # import nltk
-    # # nltk.download()
-    # from nltk.corpus import stopwords
-    # print stopwords.words("english")
-    # words = [w for w in words if not w in stopwords.words("english")]
-    # print words
 
