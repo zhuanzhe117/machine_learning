@@ -1,9 +1,12 @@
 # _*_ coding: utf-8 _*_
+# import sys
+# reload(sys)
+# sys.setdefaultencoding('utf8')
 
 import pandas as pd
-train = pd.read_csv( "D:/materials/dataset/word2vec-nlp/labeledTrainData.tsv", header=0, delimiter="\t", quoting=3 )
-test = pd.read_csv( "D:/materials/dataset/word2vec-nlp/testData.tsv", header=0, delimiter="\t", quoting=3 )
-unlabeled_train = pd.read_csv( "D:/materials/dataset/word2vec-nlp/unlabeledTrainData.tsv", header=0, delimiter="\t", quoting=3 )
+train = pd.read_csv( "D:/materials/dataset/word2vec-nlp/labeledTrainData.tsv", header=0, delimiter="\t", quoting=3,encoding='utf-8' )
+test = pd.read_csv( "D:/materials/dataset/word2vec-nlp/testData.tsv", header=0, delimiter="\t", quoting=3 ,encoding='utf-8' )
+unlabeled_train = pd.read_csv( "D:/materials/dataset/word2vec-nlp/unlabeledTrainData.tsv", header=0, delimiter="\t", quoting=3,encoding='utf-8' )
 
 # Verify the number of reviews that were read (100,000 in total)
 print "Read %d labeled train reviews, %d labeled test reviews, " \
@@ -44,7 +47,7 @@ tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 def review_to_sentences( review, tokenizer, remove_stopwords=False ):
     # Function to split a review into parsed sentences. Returns a
     # list of sentences, where each sentence is a list of words
-    print review
+    # print review 运行时建议打开
     # 1. Use the NLTK tokenizer to split the paragraph into sentences
     raw_sentences = tokenizer.tokenize(review.strip())
     #
