@@ -1,165 +1,31 @@
 #encoding=utf-8
-import pandas as pd #数据分析
-import numpy as np #科学计算
 
-data_train = pd.read_csv("Train.csv")
-data_train['Sex_Pclass'] = data_train.Sex + "_" + data_train.Pclass.map(str)
-
-from sklearn.ensemble import RandomForestRegressor
-
-### 使用 RandomForestClassifier 填补缺失的年龄属性
-def set_missing_ages(df):
-    # 把已有的数值型特征取出来丢进Random Forest Regressor中
-    age_df = df[['Age', 'Fare', 'Parch', 'SibSp', 'Pclass']]
-
-    # 乘客分成已知年龄和未知年龄两部分
-    known_age = age_df[age_df.Age.notnull()].as_matrix()
-    unknown_age = age_df[age_df.Age.isnull()].as_matrix()
-
-    # y即目标年龄
-    y = known_age[:, 0]
-
-    # X即特征属性值
-    X = known_age[:, 1:]
-
-    # fit到RandomForestRegressor之中
-    rfr = RandomForestRegressor(random_state=0, n_estimators=2000, n_jobs=-1)
-    rfr.fit(X, y)
-
-    # 用得到的模型进行未知年龄结果预测
-    predictedAges = rfr.predict(unknown_age[:, 1::])
-
-    # 用得到的预测结果填补原缺失数据
-    df.loc[(df.Age.isnull()), 'Age'] = predictedAges
-
-    return df, rfr
-
-
-def set_Cabin_type(df):
-    df.loc[(df.Cabin.notnull()), 'Cabin'] = "Yes"
-    df.loc[(df.Cabin.isnull()), 'Cabin'] = "No"
-    return df
-
-
-data_train, rfr = set_missing_ages(data_train)
-data_train = set_Cabin_type(data_train)
-
-dummies_Cabin = pd.get_dummies(data_train['Cabin'], prefix='Cabin')
-dummies_Embarked = pd.get_dummies(data_train['Embarked'], prefix='Embarked')
-dummies_Sex = pd.get_dummies(data_train['Sex'], prefix='Sex')
-dummies_Pclass = pd.get_dummies(data_train['Pclass'], prefix='Pclass')
-dummies_Sex_Pclass = pd.get_dummies(data_train['Sex_Pclass'], prefix='Sex_Pclass')
-
-df = pd.concat([data_train, dummies_Cabin, dummies_Embarked, dummies_Sex, dummies_Pclass, dummies_Sex_Pclass], axis=1)
-df.drop(['Pclass', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Sex_Pclass'], axis=1, inplace=True)
-import sklearn.preprocessing as preprocessing
-
-scaler = preprocessing.StandardScaler()
-age_scale_param = scaler.fit(df['Age'])
-df['Age_scaled'] = scaler.fit_transform(df['Age'], age_scale_param)
-fare_scale_param = scaler.fit(df['Fare'])
-df['Fare_scaled'] = scaler.fit_transform(df['Fare'], fare_scale_param)
-
-from sklearn import linear_model
-
-train_df = df.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*')
-train_np = train_df.as_matrix()
-
-# y即Survival结果
-y = train_np[:, 0]
-
-# X即特征属性值
-X = train_np[:, 1:]
-
-# fit到RandomForestRegressor之中
-clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
-clf.fit(X, y)
-
-
-#*********************************************************
-
-data_test = pd.read_csv("test.csv")
-data_test.loc[ (data_test.Fare.isnull()), 'Fare' ] = 0
-data_test['Sex_Pclass'] = data_test.Sex + "_" + data_test.Pclass.map(str)
-# 接着我们对test_data做和train_data中一致的特征变换
-# 首先用同样的RandomForestRegressor模型填上丢失的年龄
-tmp_df = data_test[['Age','Fare', 'Parch', 'SibSp', 'Pclass']]
-null_age = tmp_df[data_test.Age.isnull()].as_matrix()
-# 根据特征属性X预测年龄并补上
-X = null_age[:, 1:]
-predictedAges = rfr.predict(X)
-data_test.loc[ (data_test.Age.isnull()), 'Age' ] = predictedAges
-
-data_test = set_Cabin_type(data_test)
-dummies_Cabin = pd.get_dummies(data_test['Cabin'], prefix= 'Cabin')
-dummies_Embarked = pd.get_dummies(data_test['Embarked'], prefix= 'Embarked')
-dummies_Sex = pd.get_dummies(data_test['Sex'], prefix= 'Sex')
-dummies_Pclass = pd.get_dummies(data_test['Pclass'], prefix= 'Pclass')
-dummies_Sex_Pclass = pd.get_dummies(data_test['Sex_Pclass'], prefix= 'Sex_Pclass')
-
-
-df_test = pd.concat([data_test, dummies_Cabin, dummies_Embarked, dummies_Sex, dummies_Pclass, dummies_Sex_Pclass], axis=1)
-df_test.drop(['Pclass', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Sex_Pclass'], axis=1, inplace=True)
-df_test['Age_scaled'] = scaler.fit_transform(df_test['Age'], age_scale_param)
-df_test['Fare_scaled'] = scaler.fit_transform(df_test['Fare'], fare_scale_param)
-df_test
-
-#*************************************************
-test = df_test.filter(regex='Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*')
-predictions = clf.predict(test)
-result = pd.DataFrame({'PassengerId':data_test['PassengerId'].as_matrix(), 'Survived':predictions.astype(np.int32)})
-result.to_csv("logistic_regression_predictions2.csv", index=False)
-
-
-#**************************用scikit-learn的Bagging 模型融合*************************
-from sklearn.ensemble import BaggingRegressor
-
-train_df = df.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*|Mother|Child|Family|Title')
-train_np = train_df.as_matrix()
-
-# y即Survival结果
-y = train_np[:, 0]
-
-# X即特征属性值
-X = train_np[:, 1:]
-
-# fit到BaggingRegressor之中
-clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
-bagging_clf = BaggingRegressor(clf, n_estimators=10, max_samples=0.8, max_features=1.0, bootstrap=True, bootstrap_features=False, n_jobs=-1)
-bagging_clf.fit(X, y)
-
-test = df_test.filter(regex='Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*|Mother|Child|Family|Title')
-predictions = bagging_clf.predict(test)
-result = pd.DataFrame({'PassengerId':data_test['PassengerId'].as_matrix(), 'Survived':predictions.astype(np.int32)})
-result.to_csv("/Users/MLS/Downloads/logistic_regression_predictions2.csv", index=False)
-
-#****************************用别的分类器解决这个问题**********************************
+'''
+kaggle：泰坦尼克号之灾，预测谁能生还: 模型融合-bagging 4
+'''
+#****************************随机森林**********************************
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
 from patsy import dmatrices
 import string
 from operator import itemgetter
-import json
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
-from sklearn.cross_validation import train_test_split, StratifiedShuffleSplit, StratifiedKFold
+from sklearn.cross_validation import StratifiedShuffleSplit
+from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn import preprocessing
 from sklearn.metrics import classification_report
 from sklearn.externals import joblib
 
-##Read configuration parameters
-
-train_file = "train.csv"
-MODEL_PATH = "./"
-test_file = "test.csv"
-SUBMISSION_PATH = "./"
+train_file = "data/train.csv"
+MODEL_PATH = "result/"
+test_file = "data/test.csv"
+SUBMISSION_PATH = "result/"
 seed = 0
 
 print train_file, seed
-
 
 # 输出得分
 def report(grid_scores, n_top=3):
@@ -172,7 +38,6 @@ def report(grid_scores, n_top=3):
         print("Parameters: {0}".format(score.parameters))
         print("")
 
-
 # 清理和处理数据
 def substrings_in_string(big_string, substrings):
     for substring in substrings:
@@ -181,10 +46,8 @@ def substrings_in_string(big_string, substrings):
     print big_string
     return np.nan
 
-
 le = preprocessing.LabelEncoder()
 enc = preprocessing.OneHotEncoder()
-
 
 def clean_and_munge_data(df):
     # 处理缺省值
@@ -221,7 +84,7 @@ def clean_and_munge_data(df):
 
     df['Title'] = df.apply(replace_titles, axis=1)
 
-    # 看看家族是否够大，咳咳
+    # 看看家族是否够大
     df['Family_Size'] = df['SibSp'] + df['Parch']
     df['Family'] = df['SibSp'] * df['Parch']
 
@@ -304,21 +167,24 @@ y_train, x_train = dmatrices(formula_ml, data=df, return_type='dataframe')
 y_train = np.asarray(y_train).ravel()
 print y_train.shape, x_train.shape
 
-##选择训练和测试集
+#选择训练和测试集
 X_train, X_test, Y_train, Y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=seed)
 # 初始化分类器
 clf = RandomForestClassifier(n_estimators=500, criterion='entropy', max_depth=5, min_samples_split=1,
                              min_samples_leaf=1, max_features='auto', bootstrap=False, oob_score=False, n_jobs=1,
-                             random_state=seed,
-                             verbose=0)
+                             random_state=seed, verbose=0)
 
-###grid search找到最好的参数
+#grid search找到最好的参数
 param_grid = dict()
 ##创建分类pipeline
 pipeline = Pipeline([('clf', clf)])
-grid_search = GridSearchCV(pipeline, param_grid=param_grid, verbose=3, scoring='accuracy', \
-                           cv=StratifiedShuffleSplit(Y_train, n_iter=10, test_size=0.2, train_size=None, indices=None, \
-                                                     random_state=seed, n_iterations=None)).fit(X_train, Y_train)
+# grid_search = GridSearchCV(pipeline, param_grid=param_grid, verbose=3, scoring='accuracy',
+#                            cv=StratifiedShuffleSplit(Y_train, test_size=0.2, train_size=None,
+#                                                      random_state=seed)).fit(X_train, Y_train)
+
+grid_search = GridSearchCV(pipeline, param_grid=param_grid, verbose=3, scoring='accuracy',
+                           cv=StratifiedShuffleSplit(Y_train, n_iter=10,test_size=0.2, train_size=None,
+                                                     random_state=seed)).fit(X_train, Y_train)
 # 对结果打分
 print("Best score: %0.3f" % grid_search.best_score_)
 print(grid_search.best_estimator_)

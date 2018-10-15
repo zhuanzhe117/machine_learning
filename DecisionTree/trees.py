@@ -39,3 +39,25 @@ def splitDataSet(dataSet, axis, value):
 if __name__ == '__main__':
     myDat, labels = createDataSet()
     print splitDataSet(myDat,0,1)
+
+    from sklearn.datasets import load_iris
+    from sklearn.model_selection import train_test_split
+
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y[y != 1] = -1
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+    from sklearn.dummy import DummyClassifier
+    from sklearn.svm import SVC
+
+    clf = SVC(kernel='linear', C=1).fit(X_train, y_train)
+    clf.score(X_test, y_test)
+
+    clf = DummyClassifier(strategy='most_frequent', random_state=0)
+    clf.fit(X_train, y_train)
+    DummyClassifier(constant=None, random_state=0, strategy='most_frequent')
+    clf.score(X_test, y_test)
+
+    clf = SVC(kernel='rbf', C=1).fit(X_train, y_train)
+    clf.score(X_test, y_test)

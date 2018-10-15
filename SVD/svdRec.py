@@ -82,11 +82,11 @@ def recommend(dataMat, user, N=3, simMeas=cosSim, estMethod=standEst):
     return sorted(itemScores, key=lambda jj: jj[1], reverse=True)[:N]
 
 if __name__=="__main__":
-    # myMat = mat(loadExData())
-    # myMat[0,1]=myMat[0,0]=myMat[1,0]=myMat[2,0]=4
-    # myMat[3,3]=2
-    # print myMat
-    # print recommend(myMat,2)
-    myMat =mat(loadExData2())
+    myMat = mat(loadExData())
+    myMat[0,1]=myMat[0,0]=myMat[1,0]=myMat[2,0]=4
+    myMat[3,3]=2
     print myMat
-    recommend(myMat,1,estMethod=svdEst)
+    print recommend(myMat,2)
+    # myMat =mat(loadExData2())
+    # print myMat
+    # recommend(myMat,1,estMethod=svdEst)
