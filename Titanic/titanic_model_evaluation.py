@@ -96,12 +96,9 @@ def plot_learning_curve(estimator, title, x, y, ylim=None, cv=None, n_jobs=1,
 # print bad_cases
 
 if __name__=="__main__":
-    # df = pd.read_csv("data/train_handled.csv")
-    # train_data = df.as_matrix()
-    # y = train_data[:,1]
-    # x = train_data[:,2:]
-    # clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
-    # plot_learning_curve(clf, u"学习曲线", x, y)
-
-    import sklearn
-    print sklearn.__version__
+    df = pd.read_csv("data/train_handled.csv")
+    train_data = df.as_matrix()
+    y = train_data[:,1]
+    x = train_data[:,2:]
+    clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
+    plot_learning_curve(clf, u"学习曲线", x, y)

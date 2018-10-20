@@ -17,7 +17,7 @@ def writebunchobj(path,bunchobj):
     file_obj.close()
 
 #######################################执行SVM算法进行测试文本分类#####################################
-from sklearn.svm import LinearSVC #导入线性VM算法
+from sklearn.svm import LinearSVC #导入线性SVM算法
 from sklearn import metrics
 def get_category():
     trainpath = "D:/materials/dataset/naivebayes_chinese_dataset/train_word_bag/tfidfspace.dat" #导入训练集向量空间
