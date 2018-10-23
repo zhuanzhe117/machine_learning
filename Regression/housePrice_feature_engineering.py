@@ -11,11 +11,15 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.model_selection import train_test_split
+
 color = sns.color_palette()
 sns.set_style('darkgrid')
 
 from scipy import stats
 from scipy.stats import norm, skew
+from sklearn.preprocessing import LabelEncoder
+from scipy.special import boxcox1p
 
 pd.set_option('display.float_format', lambda x: '{:.3f}'.format(x)) #小数点后三位
 warnings.filterwarnings('ignore')
@@ -81,32 +85,7 @@ def check_missing_data(all_data):
     plt.ylabel('Percent of missing values', fontsize=15)
     plt.title('Percent missing data by feature', fontsize=15)
 
-def main():
-    data_train,data_test = loadData()
-
-    train = deleteOutliers(data_train)
-
-    trainX = train.drop(['Id', 'SalePrice'], axis=1)
-    trainY =train["SalePrice"]
-    test_ID = data_test['Id']
-    testX = data_test.drop(['Id'],axis=1)
-
-    temp(trainY)
-    #调用numpy的log1p函数对房价进行处理
-    trainY = np.log1p(trainY)
-    temp(trainY)
-
-    dataSet = pd.concat([trainX,testX],axis=0)
-    check_missing_data(dataSet)
-
-    # 绘制相关性图，各特征与房价的关系
-    corrmat = train.corr()
-    plt.subplots(figsize=(12, 9))
-    sns.heatmap(corrmat, vmax=0.9, square=True)
-
-
-
-def imputingMissingData(all_data):
+def completingMissingData(all_data):
     '''
     填补缺失值
     :param all_data:
@@ -142,25 +121,21 @@ def imputingMissingData(all_data):
     # Utilities全部取值都是 "AllPub"，可以直接删掉
     all_data = all_data.drop(['Utilities'], axis=1)
 
-    # Functional : data description says NA means typical
+    # data description says NA means typical
     all_data["Functional"] = all_data["Functional"].fillna("Typ")
 
-    # Electrical : It has one NA value. Since this feature has mostly 'SBrkr', we can set that for the missing value.
+    # 使用众数'SBrkr'填充
     all_data['Electrical'] = all_data['Electrical'].fillna(all_data['Electrical'].mode()[0])
 
-    # KitchenQual: Only one NA value, and same as Electrical, we set 'TA' (which is the most frequent) for the missing value in KitchenQual.
     all_data['KitchenQual'] = all_data['KitchenQual'].fillna(all_data['KitchenQual'].mode()[0])
 
-    # Exterior1st and Exterior2nd : Again Both Exterior 1 & 2 have only one missing value. We will just substitute in the most common string
     all_data['Exterior1st'] = all_data['Exterior1st'].fillna(all_data['Exterior1st'].mode()[0])
     all_data['Exterior2nd'] = all_data['Exterior2nd'].fillna(all_data['Exterior2nd'].mode()[0])
 
-    # SaleType : Fill in again with most frequent which is "WD"
     all_data['SaleType'] = all_data['SaleType'].fillna(all_data['SaleType'].mode()[0])
 
-    # MSSubClass : Na most likely means No building class. We can replace missing values with None
+    # Na很可能意味着没有
     all_data['MSSubClass'] = all_data['MSSubClass'].fillna("None")
-    # Is there any remaining missing value ?
 
     #Check remaining missing values if any
     all_data_na = (all_data.isnull().sum() / len(all_data)) * 100
@@ -168,23 +143,30 @@ def imputingMissingData(all_data):
     missing_data = pd.DataFrame({'Missing Ratio' :all_data_na})
     missing_data.head()
 
-    # Missing Ratio
+    return all_data
 
-    # 1、有许多特征实际上是类别型的特征，但给出来的是数字。比如MSSubClass，是评价房子种类的一个特征，给出的是10-100的数字，但实际上是类别，所以我们需要将其转化为字符串类别。
-
-    #MSSubClass=The building class
+def transformNumToStr(all_data):
+    '''
+    1、有许多特征实际上是类别型的特征，但给出来的是数字。比如MSSubClass，是评价房子种类的一个特征，
+    给出的是10-100的数字，但实际上是类别，所以我们需要将其转化为字符串类别。
+    :param all_data:
+    :return:
+    '''
     all_data['MSSubClass'] = all_data['MSSubClass'].apply(str)
-
-    #Changing OverallCond into a categorical variable
     all_data['OverallCond'] = all_data['OverallCond'].astype(str)
-
-    #Year and month sold are transformed into categorical features.
     all_data['YrSold'] = all_data['YrSold'].astype(str)
     all_data['MoSold'] = all_data['MoSold'].astype(str)
+    return all_data
+
 
     # 2、接下来 LabelEncoder，对文本类别的特征进行编号。
 
-    from sklearn.preprocessing import LabelEncoder
+def transformLabelEncoder(all_data):
+    '''
+    将类别（离散）型特征进行编号
+    :param all_data:
+    :return:
+    '''
     cols = ('FireplaceQu', 'BsmtQual', 'BsmtCond', 'GarageQual', 'GarageCond',
             'ExterQual', 'ExterCond','HeatingQC', 'PoolQC', 'KitchenQual', 'BsmtFinType1',
             'BsmtFinType2', 'Functional', 'Fence', 'BsmtExposure', 'GarageFinish', 'LandSlope',
@@ -198,35 +180,102 @@ def imputingMissingData(all_data):
 
     # shape
     print('Shape all_data: {}'.format(all_data.shape))
+    return all_data
 
-    # 3、接下来添加一个重要的特征，因为我们实际在购买房子的时候会考虑总面积的大小，但是此数据集中并没有包含此数据。总面积等于地下室面积+1层面积+2层面积。
-
-    # Adding total sqfootage feature
+def getNewFeatures(all_data):
+    '''
+    3、接下来添加一个重要的特征，因为我们实际在购买房子的时候会考虑总面积的大小，
+    但是此数据集中并没有包含此数据。总面积等于地下室面积+1层面积+2层面积。
+    :param all_data:
+    :return:
+    '''
     all_data['TotalSF'] = all_data['TotalBsmtSF'] + all_data['1stFlrSF'] + all_data['2ndFlrSF']
+    return all_data
 
-    # 4、我们对房价进行分析，不符合正态分布我们将其log转换，使其符合正态分布。那么偏离正态分布太多的特征我们也对它进行转化：
-
+def boxCoxFeat(all_data):
+    '''
+    4、skew大于0.75的将数值型特征都进行box-cox变换成服从正态分布的特征
+    :param all_data:
+    :return:
+    '''
     numeric_feats = all_data.dtypes[all_data.dtypes != "object"].index
-
     # Check the skew of all numerical features
     skewed_feats = all_data[numeric_feats].apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
     print("\nSkew in numerical features: \n")
     skewness = pd.DataFrame({'Skew' :skewed_feats})
     skewness.head(10)
-
-
     skewness = skewness[abs(skewness) > 0.75]
-    print("There are {} skewed numerical features to Box Cox transform".format(skewness.shape[0]))
-
-    from scipy.special import boxcox1p
     skewed_features = skewness.index
     lam = 0.15
     for feat in skewed_features:
         #all_data[feat] += 1
         all_data[feat] = boxcox1p(all_data[feat], lam)
 
-    #5、将类别特征进行哑变量转化：
+    return all_data
+
+def dummy(all_data):
+    '''
+    5、将类别特征进行哑变量转化
+    :param all_data:
+    :return:
+    '''
     all_data = pd.get_dummies(all_data)
     print(all_data.shape)
+    return all_data
+
+def train(trainX,trainY,model):
+    # trainData, validateData, trainLabels, validateLabels = train_test_split(trainX,trainY,test_size=0.2,random_state=0)
+    # model.fit(trainData,trainLabels)
+    # scores = model.score(validateData,validateLabels)
+
+    model.fit(trainX,trainY)
+    scores = model.score(trainX,trainY)
+
+    return scores,model
+
+def test(testX,model,test_ID):
+    predictions = model.predict(testX)
+    result = pd.DataFrame({"Id":test_ID.as_matrix(),"SalePrice":np.exp(predictions).astype(np.float32)})
+    result.to_csv("data/rfg_prediction.csv",index=False)
+
+def main():
+    data_train, data_test = loadData()
+
+    train = deleteOutliers(data_train)
+    ntrain = len(train)
+
+    trainX = train.drop(['Id', 'SalePrice'], axis=1)
+    trainY = train["SalePrice"]
+    test_ID = data_test['Id']
+    testX = data_test.drop(['Id'], axis=1)
+
+    temp(trainY)
+    # 调用numpy的log1p函数对房价进行处理
+    trainY = np.log1p(trainY)
+    temp(trainY)
+
+    dataSet = pd.concat([trainX, testX], axis=0)
+    check_missing_data(dataSet)
+
+    # 绘制相关性图，各特征与房价的关系
+    corrmat = train.corr()
+    plt.subplots(figsize=(12, 9))
+    sns.heatmap(corrmat, vmax=0.9, square=True)
+
+    dataSet = completingMissingData(dataSet)#补全缺失值
+    dataSet = transformNumToStr(dataSet)#将数值型特征转换成字符串
+    dataSet = transformLabelEncoder(dataSet)#为类别（离散）特征赋予数值ID，保留原大小关系
+    dataSet = getNewFeatures(dataSet)#组合新特征
+    dataSet = boxCoxFeat(dataSet)#对数据做Box-Cox变换使满足线性模型的基本假设
+    dataSet = dummy(dataSet)#哑变量转化
+
+    trainX = dataSet[0:ntrain]
+    testX = dataSet[ntrain:]
+
+    train_handled = pd.concat([trainX, trainY], axis=1)
+    test_handled = pd.concat([test_ID,testX],axis = 1)
+
+    train_handled.to_csv("data/train_handled.csv",index=False)
+    test_handled.to_csv("data/test_handled.csv",index=False)
 
 main()

@@ -49,6 +49,7 @@ def lwlrTest(testArr,xArr,yArr,k=1.0):
         yHat[i] = lwlr(testArr[i],xArr,yArr,k)
     return yHat
 
+
 if __name__ == '__main__':
     xArr ,yArr = loadDataSet('data/ex0.txt')
     # weights = standRegres(xArr,yArr)
