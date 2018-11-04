@@ -90,7 +90,7 @@ def makeFeatureVec(words, model, num_features):
     :param num_features: 词向量大小
     :return:
     '''
-    featureVec = np.zeros((num_features),dtype="float32")
+    featureVec = np.zeros((num_features,),dtype="float32")
     nwords = 0.
     # Index2word 是model的词表中所有单词
     index2word_set = set(model.wv.index2word)

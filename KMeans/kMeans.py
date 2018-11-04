@@ -32,7 +32,7 @@ def randCenters(dataSet ,k):
 
 import matplotlib.pyplot as plt
 
-# from Recommand_Lib imort *
+# from Recommand_Lib import *
 def color_cluster(dataindx, dataSet, plt, k=4):
     index = 0
     datalen = len(dataindx)
@@ -46,7 +46,6 @@ def color_cluster(dataindx, dataSet, plt, k=4):
         elif int(dataindx[indx]) == 3:
             plt.scatter(dataSet[index, 0], dataSet[index, 1], c='cyan', marker='o')
         index += 1
-
 
 def drawScatter(plt, mydata, size=20, color='blue', mrkr='o'):
     plt.scatter(mydata.T[0].tolist(), mydata.T[1].tolist(), s=size, c=color, marker=mrkr)
