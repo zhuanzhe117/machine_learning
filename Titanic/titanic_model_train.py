@@ -99,7 +99,7 @@ df_test.to_csv("data/test_handled.csv",index=False)
 test = df_test.filter(regex='Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*')
 predictions = clf.predict(test)
 result = pd.DataFrame({'PassengerId':data_test['PassengerId'].as_matrix(), 'Survived':predictions.astype(np.int32)})
-result.to_csv("logistic_regression_predictions.csv", index=False)
+result.to_csv("data/logistic_regression_predictions.csv", index=False)
 
 
 #**************************用scikit-learn的Bagging 模型融合*************************
