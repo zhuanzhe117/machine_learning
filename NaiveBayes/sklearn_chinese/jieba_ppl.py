@@ -1,8 +1,12 @@
 #encoding=utf-8
 
-import sys
 import os
+import sys
 import jieba
+import pickle
+from sklearn.datasets.base import Bunch
+from sklearn.feature_extraction.text import TfidfTransformer  #TF-IDF向量转换类
+from sklearn.feature_extraction.text import TfidfVectorizer   #TF-IDF向量生成类
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -37,8 +41,6 @@ def participle():
     print "中文语料分词结束！！!"
 
 #将分词结果保存到Bunch数据结构
-import pickle
-from sklearn.datasets.base import Bunch
 def persistence_to_Bunch():
     bunch = Bunch(target_name=[],label=[],filenames=[],contents=[])
     wordbag_path = "D:/materials/dataset/naivebayes_chinese_dataset/train_word_bag/train_set.dat"
@@ -61,8 +63,6 @@ def persistence_to_Bunch():
     file_obj.close()
     print "构建文本对象Bunch结束！！！"
 
-from sklearn.feature_extraction.text import TfidfTransformer  #TF-IDF向量转换类
-from sklearn.feature_extraction.text import TfidfVectorizer   #TF-IDF向量生成类
 #读取Bunch对象
 def readbunchobj(path):
     file_obj = open(path,"rb")
