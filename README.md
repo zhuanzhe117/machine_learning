@@ -28,3 +28,5 @@ Kaggle项目：
 2.HousePrice
 
 3.Word2Vec
+
+4.Credit_Card_Fraud_Detection信用卡欺诈
