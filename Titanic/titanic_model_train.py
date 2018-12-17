@@ -4,7 +4,7 @@ import numpy as np #科学计算
 '''
 kaggle：泰坦尼克号之灾，预测谁能生还：逻辑回归模型训练与测试2
 '''
-data_train = pd.read_csv("data/Train.csv")
+data_train = pd.read_csv("D:/materials/dataset/Titanic/data/Train.csv")
 data_train['Sex_Pclass'] = data_train.Sex + "_" + data_train.Pclass.map(str)
 from sklearn.ensemble import RandomForestRegressor
 
@@ -58,7 +58,7 @@ from sklearn import linear_model
 train_df = df.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*')
 train_np = train_df.as_matrix()
 #把处理好的训练数据保存成train_handled.csv
-df.to_csv("data/train_handled.csv",index=False)
+df.to_csv("D:/materials/dataset/Titanic/data/train_handled.csv",index=False)
 
 #****************************训练模型*********************************
 y = train_np[:, 0]
@@ -69,7 +69,7 @@ clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
 clf.fit(X, y)
 #****************************处理测试数据*****************************
 
-data_test = pd.read_csv("data/test.csv")
+data_test = pd.read_csv("D:/materials/dataset/Titanic/data/test.csv")
 data_test.loc[ (data_test.Fare.isnull()), 'Fare' ] = 0
 data_test['Sex_Pclass'] = data_test.Sex + "_" + data_test.Pclass.map(str)
 # 接着我们对test_data做和train_data中一致的特征变换
@@ -93,13 +93,13 @@ df_test.drop(['Pclass', 'Name', 'Sex', 'Ticket', 'Cabin', 'Embarked', 'Sex_Pclas
 df_test['Age_scaled'] = scaler.fit_transform(df_test['Age'].values.reshape(-1,1))
 df_test['Fare_scaled'] = scaler.fit_transform(df_test['Fare'].values.reshape(-1,1))
 #把处理好的测试数据保存成test_handled.csv
-df_test.to_csv("data/test_handled.csv",index=False)
+df_test.to_csv("D:/materials/dataset/Titanic/data/test_handled.csv",index=False)
 
 #**************************测试 LogisticRegression训练出来的模型***********************
 test = df_test.filter(regex='Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*')
 predictions = clf.predict(test)
 result = pd.DataFrame({'PassengerId':data_test['PassengerId'].as_matrix(), 'Survived':predictions.astype(np.int32)})
-result.to_csv("data/logistic_regression_predictions.csv", index=False)
+result.to_csv("D:/materials/dataset/Titanic/result/logistic_regression_predictions.csv", index=False)
 
 
 #**************************用scikit-learn的Bagging 模型融合*************************
@@ -109,7 +109,7 @@ import numpy as np
 from sklearn.ensemble import BaggingRegressor
 from sklearn import linear_model
 
-df = pd.read_csv("data/train_handled.csv")
+df = pd.read_csv("D:/materials/dataset/Titanic/data/train_handled.csv")
 train_df = df.filter(regex='Survived|Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*|Mother|Child|Family|Title')
 train_np = train_df.as_matrix()
 # y即Survival结果
@@ -121,8 +121,8 @@ clf = linear_model.LogisticRegression(C=1.0, penalty='l1', tol=1e-6)
 bagging_clf = BaggingRegressor(clf, n_estimators=10, max_samples=0.8, max_features=1.0, bootstrap=True, bootstrap_features=False, n_jobs=-1)
 bagging_clf.fit(X, y)
 
-df_test = pd.read_csv("data/train_handled.csv")
+df_test = pd.read_csv("D:/materials/dataset/Titanic/data/train_handled.csv")
 test = df_test.filter(regex='Age_.*|SibSp|Parch|Fare_.*|Cabin_.*|Embarked_.*|Sex_.*|Pclass.*|Mother|Child|Family|Title')
 predictions = bagging_clf.predict(test)
 result = pd.DataFrame({'PassengerId':df_test['PassengerId'].as_matrix(), 'Survived':predictions.astype(np.int32)})
-result.to_csv("/data/logistic_BaggingRegressor_predictions.csv", index=False)
+result.to_csv("D:/materials/dataset/Titanic/result/logistic_BaggingRegressor_predictions.csv", index=False)

@@ -63,8 +63,8 @@ def plot_learning_curve(estimator, title, x, y, ylim=None, cv=None, n_jobs=1,
     midpoint = ((train_scores_mean[-1] + train_scores_std[-1]) + (test_scores_mean[-1] - test_scores_std[-1])) / 2
     diff = (train_scores_mean[-1] + train_scores_std[-1]) - (test_scores_mean[-1] - test_scores_std[-1])
     # return midpoint, diff
-    print midpoint
-    print diff
+    print (midpoint)
+    print (diff)
 
 #********************************交叉验证********************************
 
@@ -91,12 +91,12 @@ def plot_learning_curve(estimator, title, x, y, ylim=None, cv=None, n_jobs=1,
 #
 # # 去除预测错误的case看原始dataframe数据
 # #split_cv['PredictResult'] = predictions
-# origin_data_train = pd.read_csv("data/Train.csv")
+# origin_data_train = pd.read_csv("D:/materials/dataset/Titanic/data/Train.csv")
 # bad_cases = origin_data_train.loc[origin_data_train['PassengerId'].isin(split_cv[predictions != cv_df.as_matrix()[:,0]]['PassengerId'].values)]
 # print bad_cases
 
 if __name__=="__main__":
-    df = pd.read_csv("data/train_handled.csv")
+    df = pd.read_csv("D:/materials/dataset/Titanic/data/train_handled.csv")
     train_data = df.as_matrix()
     y = train_data[:,1]
     x = train_data[:,2:]

@@ -6,26 +6,26 @@ kaggle：泰坦尼克号之灾，预测谁能生还: 模型融合-bagging 4
 #****************************随机森林**********************************
 import numpy as np
 import pandas as pd
-from patsy import dmatrices
+import patsy
 import string
 from operator import itemgetter
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
-from sklearn.grid_search import GridSearchCV
-from sklearn.cross_validation import StratifiedShuffleSplit
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn import preprocessing
 from sklearn.metrics import classification_report
 from sklearn.externals import joblib
 
-train_file = "data/train.csv"
-MODEL_PATH = "result/"
-test_file = "data/test.csv"
-SUBMISSION_PATH = "result/"
+train_file = "D:/materials/dataset/Titanic/data/train.csv"
+MODEL_PATH = "D:/materials/dataset/Titanic/result/"
+test_file = "D:/materials/dataset/Titanic/data/test.csv"
+SUBMISSION_PATH = "D:/materials/dataset/Titanic/result/"
 seed = 0
 
-print train_file, seed
+# print (train_file, seed)
 
 # 输出得分
 def report(grid_scores, n_top=3):
@@ -43,7 +43,7 @@ def substrings_in_string(big_string, substrings):
     for substring in substrings:
         if string.find(big_string, substring) != -1:
             return substring
-    print big_string
+    print (big_string)
     return np.nan
 
 le = preprocessing.LabelEncoder()
@@ -163,9 +163,9 @@ df = clean_and_munge_data(traindf)
 
 formula_ml = 'Survived~Pclass+C(Title)+Sex+C(AgeCat)+Fare_Per_Person+Fare+Family_Size'
 
-y_train, x_train = dmatrices(formula_ml, data=df, return_type='dataframe')
+y_train, x_train = patsy.dmatrices(formula_ml, data=df, return_type='dataframe')
 y_train = np.asarray(y_train).ravel()
-print y_train.shape, x_train.shape
+# print y_train.shape, x_train.shape
 
 #选择训练和测试集
 X_train, X_test, Y_train, Y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=seed)
@@ -193,10 +193,10 @@ report(grid_search.grid_scores_)
 print('-----grid search end------------')
 print ('on all train set')
 scores = cross_val_score(grid_search.best_estimator_, x_train, y_train, cv=3, scoring='accuracy')
-print scores.mean(), scores
+print (scores.mean(), scores)
 print ('on test set')
 scores = cross_val_score(grid_search.best_estimator_, X_test, Y_test, cv=3, scoring='accuracy')
-print scores.mean(), scores
+print (scores.mean(), scores)
 
 # 对结果打分
 

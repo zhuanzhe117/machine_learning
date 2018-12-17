@@ -6,7 +6,7 @@ import pandas as pd #数据分析
 import numpy as np #科学计算
 from pandas import Series,DataFrame
 
-data_train = pd.read_csv("data/Train.csv")
+data_train = pd.read_csv("D:/materials/dataset/Titanic/data/Train.csv")
 
 # print data_train.columns
 # print data_train[data_train.Cabin.notnull()]['Survived'].value_counts()

@@ -19,7 +19,7 @@ sns.set_style('darkgrid')
 from scipy import stats
 from scipy.stats import norm, skew
 from sklearn.preprocessing import LabelEncoder
-from scipy.special import boxcox1p
+from scipy import special
 
 pd.set_option('display.float_format', lambda x: '{:.3f}'.format(x)) #小数点后三位
 warnings.filterwarnings('ignore')
@@ -31,8 +31,8 @@ def loadData():
     加载数据集
     :return:
     """
-    data_train = pd.read_csv('data/train.csv')
-    data_test = pd.read_csv('data/test.csv')
+    data_train = pd.read_csv('D:/materials/dataset/Regression/data/train.csv')
+    data_test = pd.read_csv('D:/materials/dataset/Regression/data/test.csv')
     return data_train,data_test
 
 def deleteOutliers(data_train):
@@ -209,7 +209,7 @@ def boxCoxFeat(all_data):
     lam = 0.15
     for feat in skewed_features:
         #all_data[feat] += 1
-        all_data[feat] = boxcox1p(all_data[feat], lam)
+        all_data[feat] = special.boxcox1p(all_data[feat], lam)
 
     return all_data
 
@@ -236,7 +236,7 @@ def train(trainX,trainY,model):
 def test(testX,model,test_ID):
     predictions = model.predict(testX)
     result = pd.DataFrame({"Id":test_ID.as_matrix(),"SalePrice":np.exp(predictions).astype(np.float32)})
-    result.to_csv("data/rfg_prediction.csv",index=False)
+    result.to_csv("D:/materials/dataset/Regression/result/rfg_prediction.csv",index=False)
 
 def main():
     data_train, data_test = loadData()
@@ -275,7 +275,7 @@ def main():
     train_handled = pd.concat([trainX, trainY], axis=1)
     test_handled = pd.concat([test_ID,testX],axis = 1)
 
-    train_handled.to_csv("data/train_handled.csv",index=False)
-    test_handled.to_csv("data/test_handled.csv",index=False)
+    train_handled.to_csv("D:/materials/dataset/Regression/data/train_handled.csv",index=False)
+    test_handled.to_csv("D:/materials/dataset/Regression/data/test_handled.csv",index=False)
 
 main()

@@ -14,13 +14,13 @@ from sklearn.model_selection import KFold, cross_val_score
 
 n_folds = 5
 def load_train_dataSet():
-    train = pd.read_csv("data/train_handled.csv")
+    train = pd.read_csv("D:/materials/dataset/Regression/data/train_handled.csv")
     trainX = train.drop(['SalePrice'],axis=1)
     trainY = train['SalePrice']
     return trainX,trainY
 
 def load_test_dataSet():
-    test = pd.read_csv("data/test_handled.csv")
+    test = pd.read_csv("D:/materials/dataset/Regression/data/test_handled.csv")
     test_ID = test['Id']
     testX = test.drop(['Id'],axis=1)
     return test_ID,testX
@@ -104,7 +104,7 @@ def main():
     sub = pd.DataFrame()
     sub['Id'] = test_ID
     sub['SalePrice'] = ensemble
-    sub.to_csv('data/submission.csv', index=False)
+    sub.to_csv('D:/materials/dataset/Regression/result/submission.csv', index=False)
 
 class AveragingModels(BaseEstimator, RegressorMixin, TransformerMixin):
     '''

@@ -1,23 +1,19 @@
 # -*- coding: utf-8 -*-
 # 数据读取与计算
+import warnings
+
 import numpy as np
 import pandas as pd
-
-# 数据预处理与模型选择
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split,KFold
-from sklearn.linear_model import LogisticRegression,LogisticRegressionCV,logistic_regression_path
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import confusion_matrix, precision_recall_curve, auc, roc_auc_score, roc_curve, recall_score, classification_report
-import itertools
-from sklearn.model_selection import GridSearchCV
 # 随机森林与SVM
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, auc, roc_curve
+from sklearn.model_selection import KFold
 from sklearn.neighbors import KNeighborsClassifier
-from scipy import stats
+# 数据预处理与模型选择
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 
-import warnings
 warnings.filterwarnings("ignore")
 show_bdry = False
 show_best_c = False
