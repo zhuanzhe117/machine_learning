@@ -1,6 +1,6 @@
 # _*_ coding: utf-8 _*_
 
-from word_vector import *
+import word_vector
 from sklearn.cluster import KMeans
 import time
 
@@ -26,14 +26,14 @@ print "K Means clustering花费时长: ", elapsed, "seconds."
 word_centroid_map = dict(zip( model.index2word, idx ))
 
 # For the first 10 clusters
-for cluster in xrange(0,10):
+for cluster in range(0,10):
 
     # Print the cluster number
     print "\nCluster %d" % cluster
 
     # Find all of the words for that cluster number, and print them out
     words = []
-    for i in xrange(0,len(word_centroid_map.values())):
+    for i in range(0,len(word_centroid_map.values())):
         if( word_centroid_map.values()[i] == cluster ):
             words.append(word_centroid_map.keys()[i])
     print words

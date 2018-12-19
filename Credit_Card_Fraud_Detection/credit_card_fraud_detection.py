@@ -371,7 +371,7 @@ bdry_dict = {'lr': lr_bdry_module,'svm_rbf': svm_rbf_bdry_module,
              'svm_poly': svm_poly_bdry_module, 'rf': rf_bdry_module}
 
 # 读数据
-data = pd.read_csv("D:/materials/dataset/creditcard.csv")
+data = pd.read_csv("D:/materials/dataset/Credit_Card_Fraud_Detection/data/creditcard.csv")
 data = data.drop(['Time'], axis=1)
 
 # 对特征做标准化处理

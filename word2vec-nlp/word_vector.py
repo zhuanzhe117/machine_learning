@@ -15,8 +15,8 @@ def load_data():
     unlabeled_train = pd.read_csv("data/unlabeledTrainData.tsv", header=0, delimiter="\t", quoting=3, encoding='utf-8')
 
     # 影评数量一共100,000条
-    print "Read %d labeled train reviews, %d labeled test reviews, " \
-          "and %d unlabeled reviews\n" % (train["review"].size, test["review"].size, unlabeled_train["review"].size)
+    print ("Read %d labeled train reviews, %d labeled test reviews, " \
+          "and %d unlabeled reviews\n" % (train["review"].size, test["review"].size, unlabeled_train["review"].size))
     return train,test,unlabeled_train
 
 def review_to_sentences( review, tokenizer, remove_stopwords=False ):
@@ -54,11 +54,11 @@ def review_to_wordlist( review, remove_stopwords=False ):
 
 def train_the_model(train,unlabeled_train):
     sentences = []
-    print "将有标签的数据集的影评切分成句子，再切分成词..."
+    print ("将有标签的数据集的影评切分成句子，再切分成词...")
     for review in train["review"]:
         sentences += review_to_sentences(review, tokenizer)
 
-    print "将无标签的数据集的影评切分成句子，再切分成词..."
+    print ("将无标签的数据集的影评切分成句子，再切分成词...")
     for review in unlabeled_train["review"]:
         sentences += review_to_sentences(review, tokenizer)
 
@@ -71,7 +71,7 @@ def train_the_model(train,unlabeled_train):
     context = 10  # Context window size
     downsampling = 1e-3  # Downsample setting for frequent words
 
-    print "Training model..."
+    print ("Training model...")
     model = word2vec.Word2Vec(sentences, workers=num_workers, size=num_features, min_count=min_word_count,
                               window=context, sample=downsampling)
 
@@ -112,7 +112,7 @@ def getAvgFeatureVecs(reviews, model, num_features):
     reviewFeatureVecs = np.zeros((len(reviews),num_features),dtype="float32")
     for review in reviews:
        if counter%1000. == 0.:
-           print "Review %d of %d" % (counter, len(reviews))
+           print ("Review %d of %d" % (counter, len(reviews)))
        reviewFeatureVecs[int(counter)] = makeFeatureVec(review, model, num_features)
        counter = counter + 1.
     return reviewFeatureVecs
@@ -126,13 +126,13 @@ model=word2vec.load("data/300features_40minwords_10context")
 # print type(model.wv.syn0)
 # print model.wv.syn0.shape
 # print model["flower"]
-print "为训练数据创建平均特征向量..."
+print ("为训练数据创建平均特征向量...")
 clean_train_reviews = []
 for review in train["review"]:
     clean_train_reviews.append( review_to_wordlist( review,remove_stopwords=True ))
 trainDataVecs = getAvgFeatureVecs( clean_train_reviews, model, model.vector_size )
 
-print "为测试数据创建平均特征向量..."
+print ("为测试数据创建平均特征向量...")
 clean_test_reviews = []
 for review in test["review"]:
     clean_test_reviews.append( review_to_wordlist( review, remove_stopwords=True ))
@@ -140,7 +140,7 @@ testDataVecs = getAvgFeatureVecs( clean_test_reviews, model, model.vector_size )
 
 forest = RandomForestClassifier( n_estimators = 100 )
 
-print "训练模型..."
+print ("训练模型...")
 forest = forest.fit( trainDataVecs, train["sentiment"] )
 result = forest.predict( testDataVecs )
 output = pd.DataFrame( data={"id":test["id"], "sentiment":result} )

@@ -28,15 +28,15 @@ def review_to_words( raw_review ):
 
 def preprocess_data(train):
     num_reviews = train["review"].size
-    print "开始清理和分析训练集的影评...\n"
+    print ("开始清理和分析训练集的影评...\n")
     clean_train_reviews = []
 
     for i in range(0, num_reviews):
         if ((i + 1) % 1000 == 0):
-            print "Review %d of %d\n" % (i + 1, num_reviews)
+            print ("Review %d of %d\n" % (i + 1, num_reviews))
         clean_train_reviews.append(review_to_words(train["review"][i]))
 
-    print "Creating the bag of words...\n"
+    print ("Creating the bag of words...\n")
     # 初始化CountVectorizer对象, 是scikit-learn的词袋模型工具
     vectorizer = CountVectorizer(analyzer="word", tokenizer=None, preprocessor=None, stop_words=None,
                                  max_features=5000)
@@ -49,20 +49,20 @@ def preprocess_data(train):
     return train_data_features,vectorizer
 
 def train_model_classify(train_data_features,vectorizer):
-    print "Training the random forest..."
+    print ("Training the random forest...")
 
     forest = RandomForestClassifier(n_estimators=100)
     forest = forest.fit(train_data_features, train["sentiment"])
 
     test = pd.read_csv("data/testData.tsv", header=0, delimiter="\t", quoting=3)
-    print test.shape
+    print (test.shape)
     num_reviews = len(test["review"])
     clean_test_reviews = []
 
-    print "清理和分析测试集的影评...\n"
-    for i in xrange(0, num_reviews):
+    print ("清理和分析测试集的影评...\n")
+    for i in range(0, num_reviews):
         if ((i + 1) % 1000 == 0):
-            print "Review %d of %d\n" % (i + 1, num_reviews)
+            print ("Review %d of %d\n" % (i + 1, num_reviews))
         clean_review = review_to_words(test["review"][i])
         clean_test_reviews.append(clean_review)
 
@@ -76,8 +76,8 @@ def train_model_classify(train_data_features,vectorizer):
 
 if __name__=="__main__":
     train = pd.read_csv("data/labeledTrainData.tsv", header=0, delimiter="\t", quoting=3)
-    print train.shape
-    print train.columns.values
+    print (train.shape)
+    print (train.columns.values)
     train_data_features, vectorizer = preprocess_data(train)
     train_model_classify(train_data_features, vectorizer)
 
